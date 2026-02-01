@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DebugBot - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2em;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .stat-card h3 {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .stat-card .number {
+            font-size: 2.5em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        .section h2 {
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+
+        tr:hover {
+            background: #f9f9f9;
+        }
+
+        .password-field {
+            font-family: monospace;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .chat-log {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+
+        .chat-message.user {
+            border-left-color: #3498db;
+        }
+
+        .chat-message.blocked {
+            border-left-color: #e74c3c;
+            background: #fee;
+        }
+
+        .timestamp {
+            font-size: 0.8em;
+            color: #999;
+            margin-bottom: 5px;
+        }
+
+        .refresh-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+        }
+
+        .refresh-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* Login Screen */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-box h2 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .login-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-submit:hover {
+            transform: translateY(-2px);
+        }
+
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2>🔐 Admin Login</h2>
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="adminUsername">Username</label>
+                    <input type="text" id="adminUsername" placeholder="Enter admin username" required>
+                </div>
+                <div class="form-group">
+                    <label for="adminPassword">Password</label>
+                    <input type="password" id="adminPassword" placeholder="Enter admin password" required>
+                </div>
+                <button type="submit" class="login-submit">Login</button>
+                <div class="error-message" id="loginError"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Admin Panel (Hidden until login) -->
+    <div id="mainPanel" class="hidden">
+    <div class="header">
+        <h1>🛠️ DebugBot Admin Panel</h1>
+        <p>Monitor teams, view chat logs, and manage the system</p>
+    </div>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Teams</h3>
+                <div class="number" id="totalTeams">30</div>
+            </div>
+            <div class="stat-card">
+                <h3>Active Sessions</h3>
+                <div class="number" id="activeSessions">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Total Messages</h3>
+                <div class="number" id="totalMessages">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Blocked Requests</h3>
+                <div class="number" id="blockedRequests">0</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📋 Team Credentials</h2>
+            <input type="text" class="search-box" id="teamSearch" placeholder="Search teams...">
+            <table id="teamsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Team ID</th>
+                        <th>Password</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="teamsBody">
+                    <tr>
+                        <td colspan="4" style="text-align: center;">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>💬 Chat Logs</h2>
+            <select id="teamSelector" class="search-box">
+                <option value="">Select a team to view chat history</option>
+            </select>
+            <div id="chatLogs">
+                <p style="color: #999; text-align: center;">Select a team to view their chat history</p>
+            </div>
+        </div>
+    </div>
+
+    <button class="refresh-btn" onclick="loadData()" title="Refresh Data">🔄</button>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin; // Use same origin as page
+        let allTeams = [];
+        let allLogs = {};
+        let isAuthenticated = false;
+
+        // Check authentication on load
+        checkAuth();
+
+        async function checkAuth() {
+            try {
+                const res = await fetch(`${API_URL}/api/check-session`, {
+                    credentials: 'include'
+                });
+                const data = await res.json();
+                
+                if (data.authenticated && data.is_admin) {
+                    isAuthenticated = true;
+                    showMainPanel();
+                    loadData();
+                }
+            } catch (err) {
+                console.error('Auth check failed:', err);
+            }
+        }
+
+        // Admin Login
+        document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('adminUsername').value;
+            const password = document.getElementById('adminPassword').value;
+            const errorMsg = document.getElementById('loginError');
+            
+            try {
+                const res = await fetch(`${API_URL}/api/admin/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    isAuthenticated = true;
+                    showMainPanel();
+                    loadData();
+                } else {
+                    errorMsg.textContent = data.error || 'Login failed';
+                }
+            } catch (err) {
+                errorMsg.textContent = 'Connection error. Is the server running?';
+            }
+        });
+
+        function showMainPanel() {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('mainPanel').classList.remove('hidden');
+        }
+
+        async function loadData() {
+            if (!isAuthenticated) return;
+            await loadTeams();
+            await loadChatLogs();
+            updateStats();
+        }
+
+        async function loadTeams() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/teams`);
+                const data = await res.json();
+                allTeams = data.teams;
+                renderTeamsTable(allTeams);
+                populateTeamSelector(allTeams);
+            } catch (err) {
+                console.error('Failed to load teams:', err);
+            }
+        }
+
+        async function loadChatLogs() {
+            try {
+                const res = await fetch(`${API_URL}/api/admin/chat-logs`);
+                const data = await res.json();
+                allLogs = data.logs;
+            } catch (err) {
+                console.error('Failed to load chat logs:', err);
+            }
+        }
+
+        function renderTeamsTable(teams) {
+            const tbody = document.getElementById('teamsBody');
+            tbody.innerHTML = teams.map((team, idx) => `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><strong>${team.team_id}</strong></td>
+                    <td><span class="password-field">${team.password}</span></td>
+                    <td>
+                        <button class="btn btn-primary" onclick="copyCredentials('${team.team_id}', '${team.password}')">📋 Copy</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function populateTeamSelector(teams) {
+            const selector = document.getElementById('teamSelector');
+            selector.innerHTML = '<option value="">Select a team to view chat history</option>' +
+                teams.map(team => `<option value="${team.team_id}">${team.team_id}</option>`).join('');
+        }
+
+        function copyCredentials(teamId, password) {
+            const text = `Team ID: ${teamId}\nPassword: ${password}`;
+            navigator.clipboard.writeText(text);
+            alert(`✅ Credentials copied for ${teamId}`);
+        }
+
+        document.getElementById('teamSearch').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filtered = allTeams.filter(t => t.team_id.toLowerCase().includes(query));
+            renderTeamsTable(filtered);
+        });
+
+        document.getElementById('teamSelector').addEventListener('change', (e) => {
+            const teamId = e.target.value;
+            if (!teamId) {
+                document.getElementById('chatLogs').innerHTML = '<p style="color: #999; text-align: center;">Select a team to view their chat history</p>';
+                return;
+            }
+
+            const logs = allLogs[teamId] || [];
+            if (logs.length === 0) {
+                document.getElementById('chatLogs').innerHTML = '<p style="color: #999; text-align: center;">No messages yet</p>';
+                return;
+            }
+
+            const logsHtml = logs.map(msg => {
+                const isBlocked = msg.content.includes('Request Blocked');
+                return `
+                    <div class="chat-message ${msg.role} ${isBlocked ? 'blocked' : ''}">
+                        <div class="timestamp">${new Date(msg.timestamp).toLocaleString()} - ${msg.role.toUpperCase()}</div>
+                        <div>${escapeHtml(msg.content)}</div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('chatLogs').innerHTML = `<div class="chat-log">${logsHtml}</div>`;
+        });
+
+        function updateStats() {
+            document.getElementById('totalTeams').textContent = allTeams.length;
+            
+            const totalMessages = Object.values(allLogs).reduce((sum, logs) => sum + logs.length, 0);
+            document.getElementById('totalMessages').textContent = totalMessages;
+
+            const activeSessions = Object.keys(allLogs).length;
+            document.getElementById('activeSessions').textContent = activeSessions;
+
+            let blocked = 0;
+            Object.values(allLogs).forEach(logs => {
+                logs.forEach(msg => {
+                    if (msg.content.includes('Request Blocked')) blocked++;
+                });
+            });
+            document.getElementById('blockedRequests').textContent = blocked;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

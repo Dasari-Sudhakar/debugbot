@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DebugBot QR Code Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .qr-container {
+            margin-top: 30px;
+            text-align: center;
+            display: none;
+        }
+
+        .qr-container.show {
+            display: block;
+        }
+
+        #qrcode {
+            display: inline-block;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .qr-label {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            color: #333;
+            word-break: break-all;
+        }
+
+        .download-btn {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .download-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .instructions {
+            margin-top: 30px;
+            padding: 20px;
+            background: #e7f3ff;
+            border-left: 4px solid #2196F3;
+            border-radius: 8px;
+        }
+
+        .instructions h3 {
+            color: #1976D2;
+            margin-bottom: 10px;
+        }
+
+        .instructions ul {
+            margin-left: 20px;
+            color: #666;
+        }
+
+        .instructions li {
+            margin: 8px 0;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 DebugBot QR Code</h1>
+        <p class="subtitle">Generate QR code for easy team access</p>
+
+        <div class="input-group">
+            <label for="ipAddress">Your Server IP Address:</label>
+            <input type="text" id="ipAddress" placeholder="192.168.1.100" value="192.168.1.100">
+        </div>
+
+        <div class="input-group">
+            <label for="port">Port:</label>
+            <input type="text" id="port" placeholder="5000" value="5000">
+        </div>
+
+        <button class="btn" onclick="generateQR()">Generate QR Code</button>
+
+        <div class="qr-container" id="qrContainer">
+            <div id="qrcode"></div>
+            <div class="qr-label" id="urlLabel"></div>
+            <button class="download-btn" onclick="downloadQR()">📥 Download QR Code</button>
+        </div>
+
+        <div class="instructions">
+            <h3>📋 How to Use:</h3>
+            <ul>
+                <li><strong>Step 1:</strong> Find your IP address using <code>ipconfig</code></li>
+                <li><strong>Step 2:</strong> Enter IP and Port above</li>
+                <li><strong>Step 3:</strong> Click "Generate QR Code"</li>
+                <li><strong>Step 4:</strong> Download and print/display</li>
+                <li><strong>Step 5:</strong> Teams scan with phone to access instantly!</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let qrCodeInstance = null;
+
+        function generateQR() {
+            const ip = document.getElementById('ipAddress').value.trim();
+            const port = document.getElementById('port').value.trim();
+
+            if (!ip) {
+                alert('Please enter your IP address!');
+                return;
+            }
+
+            const url = `http://${ip}:${port}`;
+            
+            // Clear previous QR code
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+
+            // Generate new QR code
+            qrCodeInstance = new QRCode(qrContainer, {
+                text: url,
+                width: 300,
+                height: 300,
+                colorDark: "#667eea",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Show container and update label
+            document.getElementById('qrContainer').classList.add('show');
+            document.getElementById('urlLabel').textContent = url;
+        }
+
+        function downloadQR() {
+            const canvas = document.querySelector('#qrcode canvas');
+            if (!canvas) {
+                alert('Generate QR code first!');
+                return;
+            }
+
+            // Create download link
+            const url = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = 'debugbot-qr-code.png';
+            link.href = url;
+            link.click();
+        }
+
+        // Auto-generate on page load with default values
+        window.addEventListener('load', () => {
+            generateQR();
+        });
+    </script>
+</body>
+</html>
